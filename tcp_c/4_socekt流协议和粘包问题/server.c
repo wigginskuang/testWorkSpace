@@ -6,58 +6,7 @@
 #include<unistd.h>
 #include<arpa/inet.h>
 #include<stdlib.h>
-
-/*接收数据（处理粘包问题）*/
-//ssize_t 有符号的整数
-//参数：fd 套接字 | 指向一个buffer的指针 | 我要读取的字节数
-ssize_t read_n(int fd , void *buffer , size_t count);
-{
-        size_t nleft = cout;    //剩余的字节数
-        size_t nread =0;    //已接收的字节数
-        char *p = (char*)buf;   //定义一个char指针指向buffer
-        //只要nleft大于0，说明还有字节数没有接受完
-        while(nleft>0)
-        {
-                nread = read(fd , p , nleft);
-                if(nread<0) //读到的字节数小于0，报错返回
-                {
-                    return -1;
-                }
-                else if(nread = 0)//说明对方关闭连接
-                {
-                    break;
-                }
-                //读到数据，指针偏移
-                p += nread;
-                nleft -= nread;
-        }
-        return count;
-}
-
-
-ssize_t write_n(int fd , void *buffer , size_t count)
-{
-        size_t nleft = cout;    //剩余的字节数
-        size_t nread =0;    //已接收的字节数
-        char *p = (char*)buf;   //定义一个char指针指向buffer
-        //只要nleft大于0，说明还有字节数没有接受完
-        while(nleft>0)
-        {
-                nread = write(fd , p , nleft);
-                if(nread<0) //读到的字节数小于0，报错返回
-                {
-                    return -1;
-                }
-                else if(nread = 0)//说明对方关闭连接
-                {
-                    continue;
-                }
-                //读到数据，指针偏移
-                p += nread;
-                nleft -= nread;
-        }
-        return count;  
-}
+#include"mysocket.h"
 
 
 int main()
@@ -106,6 +55,7 @@ int main()
 	socklen_t peerlen = sizeof(peeraddr);//socklen_t是一种数据类型
 	int i=0;
 
+
     while(1)
     {
 	    /*accept 默认阻塞程序，等待连接,当接收到连接会把客户端的ip填到peeraddr中*/
@@ -128,35 +78,54 @@ int main()
 	    {
 		    printf("fork failed\n");		
 	    }
-	    if(pid == 0)//子进程
+	    if(pid == 0)//子进程中
 	    {
 	            //如果没有这个while(1),server只接收一次
 	            while(1)
 	            {
 			        /*recv*/
-			        char buffer_read[1024];
-			        int recv_bytes = recv(socketfd,buffer_read,sizeof(buffer_read),0);
-			        if(recv_bytes == -1)
+			        struct packet recv_buffer;
+					int n;
+					/*先接收包头，进而确认包体的长度*/
+					int recv_bytes = read_n(socketfd,&recv_buffer.head,4);//先接收四个字节，既是先接收数据包的包头
+			        if(recv_bytes == -1)//说明对方退出
 			        {
 				        perror("");
 			        }
-			        else if(recv_bytes == 0)
+			        else if(recv_bytes < 4)//如果接收<4，说明对方中途中断了
+			        {
+				        printf("[child close  client disconnect]\n");
+				        //close(listenfd);
+				        //exit(EXIT_SUCCESS);
+				        break;
+			        }
+			        
+					n=ntohl(recv_buffer.head);//由于包头接收的是网络字节序，所以要转换成主机字节序；
+
+					int ret=read_n(socketfd,recv_buffer.body,n);
+					if(ret == -1)//说明对方退出
+			        {
+				        perror("");
+			        }
+			        else if(ret < n)//如果接收<n，说明对方中途中断了
 			        {
 				        printf("[child close  client disconnect]\n");
 				        close(listenfd);
 				        exit(EXIT_SUCCESS);
 				        break;
 			        }
-			        //printf("recv_bytes=%d\n",recv_bytes);
+
 			        
 			        //打印接收到的字符串
-			        printf("client[%d]:%s\n",i,buffer_read);
+			        printf("client[%d]:%s\n",i,recv_buffer.body);
+					//fputs(recv_buffer.body,stdout);
 			        
 			        
 			        //send
-			        int sent_bytes = send(socketfd,buffer_read,sizeof(buffer_read),0);
-	                //printf("written_bytes=%d\n",sent_bytes);
-	                memset(buffer_read,0,sizeof(buffer_read));
+			        //int sent_bytes = send(socketfd,buffer_read,sizeof(buffer_read),0);
+					int sent_bytes = write_n(socketfd,&recv_buffer,4+n);	                
+					//printf("written_bytes=%d\n",sent_bytes);
+	                memset(&recv_buffer,0,sizeof(recv_buffer));
 	            }
 	            exit(EXIT_SUCCESS);				
 	    }

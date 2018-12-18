@@ -1,8 +1,10 @@
-all:server2 client
+all:server client
+.PHONY:clean
 
 server:server.c
-	gcc -o server2 server2.c
+	gcc -o server server.c
 client:client.c
 	gcc -o client client.c
 
-
+clean:
+	-rm server client
