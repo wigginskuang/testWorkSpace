@@ -1,4 +1,6 @@
 #include<unistd.h>
+#include<errno.h>
+#include<stdlib.h>
 
 
 /*数据包*/
@@ -73,12 +75,12 @@ ssize_t write_n(int fd,void *buffer,size_t count)
 }
 
 //偷窥接收缓冲区的数据，但不移除,偷看到数据就返回数据字节数，如果没有就阻塞
-ssize_t recv_peek(int sockfd, void *buf, size_t len, int flags)
+ssize_t recv_peek(int sockfd, void *buf, size_t len)
 {
 	while(1)
 	{
 		int ret = recv(sockfd,buf,len,MSG_PEEK);
-		if(ret == -1 && errno== ENTER)//-1代表接收失败，enter代表信号中断
+		if(ret == -1 && errno== EINTR)//-1代表接收失败，enter代表信号中断
 		{
 			continue;//继续循环做一遍
 		}
@@ -91,7 +93,7 @@ ssize_t recv_peek(int sockfd, void *buf, size_t len, int flags)
 实现遇到\n或\t等的消息边界
 size_t maxline一行最大的字节数
 */
-ssize_t recvline(int sockfd, void *buf, size_t len, size_t maxline)
+ssize_t recv_line(int sockfd, void *buf, size_t maxline)
 {
 	int ret;
 	int nread;//已读取字节数
@@ -115,7 +117,7 @@ ssize_t recvline(int sockfd, void *buf, size_t len, size_t maxline)
 		{
 			if(bufp[i]=='\n')//如果遇到\n说明缓冲区可以移除
 			{
-				ret = readn(sockfd,bufp,i+1);
+				ret = read_n(sockfd,bufp,i+1);
 				if(ret != i+1)//说明接收失败
 					exit(EXIT_FAILURE);
 				return ret;

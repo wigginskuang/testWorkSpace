@@ -23,8 +23,7 @@ int main()
 	servaddr.sin_family = AF_INET;
 	servaddr.sin_port = 5188;
 	servaddr.sin_addr.s_addr = htonl(INADDR_ANY);//接受的是一个网络字节序
-	//servaddr.sin_addr.s_addr = inet_addr("192.168.1.105");
-	//inet_aton("192.168.1.105",&servaddr.sin_addr)
+
 
 
 	/*开启端口重复利用*/
@@ -84,16 +83,15 @@ int main()
 	            while(1)
 	            {
 			        /*recv*/
-			        //struct packet recv_buffer;
 					char recv_buffer[1024];
 					int n;
 					/*先接收包头，进而确认包体的长度*/
-					int recv_bytes = read_n(socketfd,&recv_buffer.head,4);//先接收四个字节，既是先接收数据包的包头
+					int recv_bytes = recv_line(socketfd,recv_buffer,1024);
 			        if(recv_bytes == -1)//说明对方退出
 			        {
 				        perror("");
 			        }
-			        else if(recv_bytes < 4)//如果接收<4，说明对方中途中断了
+			        else if(recv_bytes == 0)//如果接收<4，说明对方中途中断了
 			        {
 				        printf("[child close  client disconnect]\n");
 				        //close(listenfd);
@@ -101,30 +99,13 @@ int main()
 				        break;
 			        }
 			        
-					n=ntohl(recv_buffer.head);//由于包头接收的是网络字节序，所以要转换成主机字节序；
-
-					int ret=read_n(socketfd,recv_buffer.body,n);
-					if(ret == -1)//说明对方退出
-			        {
-				        perror("");
-			        }
-			        else if(ret < n)//如果接收<n，说明对方中途中断了
-			        {
-				        printf("[child close  client disconnect]\n");
-				        close(listenfd);
-				        exit(EXIT_SUCCESS);
-				        break;
-			        }
-
 			        
 			        //打印接收到的字符串
-			        printf("client[%d]:%s\n",i,recv_buffer.body);
-					//fputs(recv_buffer.body,stdout);
+					fputs(recv_buffer,stdout);
 			        
 			        
-			        //send
-			        //int sent_bytes = send(socketfd,buffer_read,sizeof(buffer_read),0);
-					int sent_bytes = write_n(socketfd,&recv_buffer,4+n);	                
+			        //send回射
+					int sent_bytes = write_n(socketfd,recv_buffer,strlen(recv_buffer));	                
 					//printf("written_bytes=%d\n",sent_bytes);
 	                memset(&recv_buffer,0,sizeof(recv_buffer));
 	            }

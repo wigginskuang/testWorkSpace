@@ -11,9 +11,7 @@ int main()
 	int socketfd = socket(AF_INET,SOCK_STREAM,0);
 	printf("create socket succ，socketfd=%d\n",socketfd);
 
-	/*
-	头文件：netinet/in.h
-	*/
+	/*头文件：netinet/in.h*/
 	struct sockaddr_in clientaddr;
 	memset(&clientaddr,0,sizeof(clientaddr));
 	clientaddr.sin_family = AF_INET;
