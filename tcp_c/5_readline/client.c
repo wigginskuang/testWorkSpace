@@ -22,11 +22,7 @@ int main()
 	clientaddr.sin_addr.s_addr = inet_addr("192.168.1.106");
 	
 	
-	/*本地ip信息*/
-	struct sockaddr_in localaddr;
-	socklen_t addrlen = sizeof(localaddr);
-	int socketname = getsockname(socketfd,(struct sockaddr*)&localaddr,&addrlen);
-	printf("accept succ socket=%d ip=%s port=%d\n",socketfd,inet_ntoa(localaddr.sin_addr),ntohs(localaddr.sin_port));
+	
 	
 	/*connect
 	说明：
@@ -38,6 +34,13 @@ int main()
 		printf("connect failed\n");
 	}
 	printf("connect succ\n");
+	
+	
+	/*本地ip信息*/
+	struct sockaddr_in localaddr;
+	socklen_t addrlen = sizeof(localaddr);
+	int socketname = getsockname(socketfd,(struct sockaddr*)&localaddr,&addrlen);
+	printf("accept succ socket=%d ip=%s port=%d\n",socketfd,inet_ntoa(localaddr.sin_addr),ntohs(localaddr.sin_port));
 
 
 		//定义buffer

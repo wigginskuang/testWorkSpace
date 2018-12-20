@@ -1,7 +1,13 @@
 #include<unistd.h>
 #include<errno.h>
 #include<stdlib.h>
-
+#include<netdb.h>
+#include<unistd.h>
+#include<sys/socket.h>
+#include<string.h>
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 /*数据包*/
 struct packet
@@ -140,4 +146,25 @@ ssize_t recv_line(int sockfd, void *buf, size_t maxline)
 	
 	return -1;
 }
+
+
+/*获取本机的ip地址
+思路：通过获取本机主机名，找到本机所有的ip地址*/
+int getlocalip(char *ip)
+{
+        char hostname[256];
+        gethostname(hostname,sizeof(hostname));
+        
+        struct hostent *hp;
+        hp=gethostbyname(hostname);
+        if(hp == NULL)
+        {
+                return -1;
+        }
+        
+        strcpy(ip,inet_ntoa(*(struct in_addr*)hp->h_addr)); //#define h_addr h_addr_list[0]
+        
+        return 0;
+}
+
 

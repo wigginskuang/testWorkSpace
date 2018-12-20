@@ -11,13 +11,19 @@
 
 int main()
 {
+        /*获取本地ip*/
+        char ip[16];
+        getlocalip(ip);
+        printf("localip:%s\n",ip);
+
+
 	/*creat socket
 	返回值：成功，socket描述字。失败，INVALID_SOCKET错误，WSAGetLastError()获取相应错误代码。	
 	*/
 	int listenfd = socket(AF_INET,SOCK_STREAM,0);
 	printf("creat socket succ,listenfd = %d\n",listenfd);
 
-	/*设置struct sockaddr_in*/
+	/*初始化本地的ip信息*/
 	struct sockaddr_in servaddr;
 	memset(&servaddr,0,sizeof(servaddr));
 	servaddr.sin_family = AF_INET;
@@ -50,6 +56,7 @@ int main()
 	printf("listen succ\n");
 
 	
+	/*客户端的地址结构体*/
 	struct sockaddr_in peeraddr;
 	socklen_t peerlen = sizeof(peeraddr);//socklen_t是一种数据类型
 	int i=0;
@@ -65,6 +72,8 @@ int main()
 	    }
 	    else if(socketfd>0)
 	    {
+	                
+	                printf("getpeername=%d\n",getpeername(socketfd,(struct sockaddr*)&peeraddr,&peerlen));
 	         printf("accept succ socket=%d ip=%s port=%d\n",socketfd,inet_ntoa(peeraddr.sin_addr),ntohs(peeraddr.sin_port));
 	         i++;
 	    }
