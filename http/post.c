@@ -13,11 +13,21 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include "cJSON.h"
+
+#include "base64.h"
  
 #define IPSTR "apizhiduoc.kuaichuangkeji.com/consumption/test"
 #define URL "api.zdctest.kuaichuangkeji.com"
 #define PORT 80
 #define BUFSIZE 1024
+
+
+
+char *image_base64 = pic_to_base64();
+printf("%s\n",image_base64);
+
+
+
  
 int main(int argc, char **argv)
 {
