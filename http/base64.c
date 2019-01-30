@@ -91,24 +91,26 @@ int base64_decode( const char * base64, unsigned char * bindata )
 }
 
 
-
-
-
-
-
-
-char *pic_to_base64(char *imageBase64)
+/*******************************************************
+*
+* Function name     ：pic_turn_base64
+* Description       : 图片转成base64编码
+* Parameter         ：
+*       image_path  需要转码的图片的路径
+*       imageBase64 输出后base64编码字符串指针       
+* Return            :成功返回一个char指针，失败则指针为null
+**********************************************************/
+char *pic_turn_base64(char *image_path,char *imageBase64)
 {	
 	FILE *fp = NULL;
 	unsigned int imageSize;        //图片字节数
 	char *imageBin;               
-    
     char *imageOutput;
 	size_t result;
 	char *ret; 
 	unsigned int base64StrLength;
 
-	fp = fopen("1.png","rb");   //待编码图片
+	fp = fopen(image_path,"rb");   //待编码图片
 	if (NULL == fp)
     {
 	    perror("file open file");
@@ -143,11 +145,10 @@ char *pic_to_base64(char *imageBase64)
     //图片转base64编码
     base64_encode(imageBin, imageBase64, imageSize);
     base64StrLength = strlen(imageBase64);
-    printf("base64 str length:%d\n", base64StrLength);
-    printf("%s\n\n", imageBase64);
+    // printf("base64 str length:%d\n", base64StrLength);
+    // printf("%s\n\n", imageBase64);
  
-    
 	free(imageBin);
-    free(imageBase64);
+    //free(imageBase64);
 	return imageBase64;
 }
